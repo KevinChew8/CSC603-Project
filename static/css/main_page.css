@@ -1,0 +1,106 @@
+/*can give two colors for light and dark mode on browser*/
+:root {
+    color-scheme: light dark;
+}
+
+/*all elements*/
+* {
+    box-sizing: boxing-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-style: normal;
+    font-weight: 400;
+    background-color: light-dark(#ffffff, #121212);
+}
+
+.chat_box {
+    width: 90vw;
+    height: 100vh;
+    overflow: hidden;
+    overflow-y: clip;
+    border: 3px solid light-dark(#ffffff, #121212);
+    border-radius: 10px;
+    margin: 50px auto;
+    background: light-dark(#ffffff, #202020);
+    background-size: contain;
+    background-position: center;
+}
+
+.chat_bot_title {
+    height: 5%;
+    background-color: light-dark(#ffffff, #404040);
+    color: light-dark(#000000, #e0e0e0);
+    font-size: 24px;
+    text-align: center;
+    padding: 10px 0;
+    border-radius: 10px 10px 0 0;
+}
+
+.chat_bot_body {
+    height: 70%;
+    padding: 15px;
+    list-style: none;
+    overflow-y: auto;
+}
+
+.chat_bot_body li {
+    margin-bottom: 10px;
+}
+
+.chat_bot_body p {
+    max-width: 60%;
+    padding: 10px;
+    border-radius: 10px;
+    overflow-wrap: break-word;
+}
+
+/*Probably give ai and user different background color in future*/
+.chat_bot_out p {
+    background-color: light-dark(#BEBEBE, #404040);
+    align-self: flex-end;
+    color: light-dark(#000000, #e0e0e0);
+}
+
+.chat_bot_in p {
+    background-color: light-dark(#BEBEBE, #404040);
+    color: light-dark(#000000, #e0e0e0);
+}
+
+.chat_bot_input {
+    padding: 10px;
+    border-top: 1px solid grey;
+}
+
+.chat_bot_input textarea {
+    width: 100%;
+    height: 10%;
+    padding: 10px;
+    border: 1px solid light-dark(#ffffff, #121212);
+    border-radius: 10px;
+    resize: none;
+    outline: none;
+    overflow-y: scroll;
+    background-color: light-dark(#f5f5f5, light-grey);
+    font-size: 16px;
+    color: light-dark(#000000, #e0e0e0);
+    font-weight: 600;
+    margin-top: -10px;
+    margin-left: -15px;
+}
+
+#send_btn {
+    width: 100%;
+    padding: 8px;
+    border: 0;
+    outline: none;
+    font-size: 20px;
+    font-weight: 600;
+    border-radius: 10px;
+    background-color: light-dark(#f5f5f5, light-grey);
+    cursor: pointer;
+    color: light-dark(#000000, #e0e0e0);
+    margin-top: 12px;
+}

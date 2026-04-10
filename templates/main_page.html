@@ -2,21 +2,103 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Main Page</title>
+    <title>Suggestify</title>
     <link rel="stylesheet" href="{{url_for('static', filename='css/main_page.css')}}">
 </head>
 <body>
-    <div class="chat_box">
-        <div class="chat_bot_title">Suggestify</div>
-        <ul class="chat_bot_body">
-            <li class="chat_bot_in">
-                <p>What is on your mind?</p>
-            </li>
-        </ul>
-        <div class="chat_bot_input">
-            <textarea rows="0" cols="17" placeholder="Enter a message..."></textarea>
-            <button id="send_btn">Send</button>
-        </div>
+
+<div class="chat_box">
+    <div class="chat_bot_title">Suggestify</div>
+
+    <ul class="chat_bot_body">
+        <li class="chat_bot_in">
+            <p>What do you feel like exploring? (movies, music, books, games)</p>
+        </li>
+    </ul>
+
+    <div class="chat_bot_input">
+        <textarea id="user_input" placeholder="Try: comedy horror, chill music, story games..."></textarea>
+        <button id="send_btn">Send</button>
     </div>
+</div>
+
+<script>
+const sendBtn = document.getElementById("send_btn");
+const inputBox = document.getElementById("user_input");
+const chatBody = document.querySelector(".chat_bot_body");
+
+sendBtn.addEventListener("click", async () => {
+    const userText = inputBox.value.trim();
+    if (!userText) return;
+
+    // Show user message
+    chatBody.innerHTML += `
+        <li class="chat_bot_out">
+            <p>${userText}</p>
+        </li>
+    `;
+
+    inputBox.value = "";
+
+    // Loading message
+    chatBody.innerHTML += `
+        <li class="chat_bot_in" id="loading">
+            <p>Thinking...</p>
+        </li>
+    `;
+
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    // Call backend
+    const response = await fetch("/recommend", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ query: userText })
+    });
+
+    const data = await response.json();
+
+    // Remove loading
+    document.getElementById("loading").remove();
+
+    // Show results
+    let botHTML = `<li class="chat_bot_in"><div class="results_grid">`;
+
+    data.forEach(item => {
+        const searchQuery = encodeURIComponent(item.title);
+
+        botHTML += `
+            <div class="card" onclick="window.open('https://www.google.com/search?q=${searchQuery}', '_blank')">
+                ${
+                    item.poster 
+                    ? `<img src="${item.poster}">`
+                    : `<div class="no-image">No Image</div>`
+                }
+                <div class="card_info">
+                    <span class="media_type">[${item.type.toUpperCase()}]</span>
+                    <p>${item.title}</p>
+                </div>
+            </div>
+        `;
+    });
+
+    botHTML += `</div></li>`;
+
+    chatBody.innerHTML += botHTML;
+
+    chatBody.scrollTop = chatBody.scrollHeight;
+});
+
+// Optional: press Enter to send
+inputBox.addEventListener("keypress", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendBtn.click();
+    }
+});
+</script>
+
 </body>
 </html>

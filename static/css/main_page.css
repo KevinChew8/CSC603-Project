@@ -1,106 +1,271 @@
-/*can give two colors for light and dark mode on browser*/
 :root {
     color-scheme: light dark;
+
+    /* Backgrounds */
+    --bg-light: #eef2ff;
+    --bg-dark: #020617;
+
+    --chat-light: #ffffff;
+    --chat-dark: #0f172a;
+
+    /* Messages */
+    --bot-light: #e2e8f0;
+    --bot-dark: #1e293b;
+
+    --user-light: #4f46e5;
+    --user-dark: #6366f1;
+
+    /* Text */
+    --text-light: #0f172a;
+    --text-dark: #e2e8f0;
+
+    /* Accent */
+    --accent: #6366f1;
 }
 
-/*all elements*/
+/* Reset */
 * {
-    box-sizing: boxing-box;
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+/* Body */
 body {
-    font-style: normal;
-    font-weight: 400;
-    background-color: light-dark(#ffffff, #121212);
-}
+    font-family: "Inter", system-ui, sans-serif;
+    background: linear-gradient(135deg, #141414, #0f0f0f);
+    background-color: light-dark(var(--bg-light), var(--bg-dark));
 
-.chat_box {
-    width: 90vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 100vh;
+    padding: 25px;
+}
+
+/* Chat container */
+.chat_box {
+    width: 75vw;
+    max-width: 1200px;
+    height: 90vh;
+
+    display: flex;
+    flex-direction: column;
+
+    border-radius: 20px;
     overflow: hidden;
-    overflow-y: clip;
-    border: 3px solid light-dark(#ffffff, #121212);
-    border-radius: 10px;
-    margin: 50px auto;
-    background: light-dark(#ffffff, #202020);
-    background-size: contain;
-    background-position: center;
+
+    background: light-dark(var(--chat-light), var(--chat-dark));
+    box-shadow: 0 15px 50px rgba(0,0,0,0.25);
 }
 
+/* 🔥 IMPROVED HEADER */
 .chat_bot_title {
-    height: 5%;
-    background-color: light-dark(#ffffff, #404040);
-    color: light-dark(#000000, #e0e0e0);
-    font-size: 24px;
+    padding: 25px 20px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+
     text-align: center;
-    padding: 10px 0;
-    border-radius: 10px 10px 0 0;
+
+    background: linear-gradient(135deg, #4f46e5, #6366f1, #3b82f6);
+    color: white;
+
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
+/* Chat body */
 .chat_bot_body {
-    height: 70%;
-    padding: 15px;
+    flex: 1;
+    padding: 25px;
+
     list-style: none;
     overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    scroll-behavior: smooth;
 }
 
+/* Message container */
 .chat_bot_body li {
-    margin-bottom: 10px;
+    display: flex;
 }
 
+/* Message bubbles */
 .chat_bot_body p {
+    padding: 14px 18px;
+    border-radius: 18px;
     max-width: 60%;
-    padding: 10px;
-    border-radius: 10px;
-    overflow-wrap: break-word;
+    font-size: 15px;
+    line-height: 1.5;
 }
 
-/*Probably give ai and user different background color in future*/
-.chat_bot_out p {
-    background-color: light-dark(#BEBEBE, #404040);
-    align-self: flex-end;
-    color: light-dark(#000000, #e0e0e0);
+/* Bot messages */
+.chat_bot_in {
+    justify-content: flex-start;
 }
 
 .chat_bot_in p {
-    background-color: light-dark(#BEBEBE, #404040);
-    color: light-dark(#000000, #e0e0e0);
+    background-color: light-dark(var(--bot-light), var(--bot-dark));
+    color: light-dark(var(--text-light), var(--text-dark));
 }
 
+/* User messages */
+.chat_bot_out {
+    justify-content: flex-end;
+}
+
+.chat_bot_out p {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+}
+
+/* Input area */
 .chat_bot_input {
-    padding: 10px;
-    border-top: 1px solid grey;
+    padding: 18px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+
+    background-color: light-dark(#ffffff, #020617);
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
+/* Textarea */
 .chat_bot_input textarea {
     width: 100%;
-    height: 10%;
-    padding: 10px;
-    border: 1px solid light-dark(#ffffff, #121212);
-    border-radius: 10px;
-    resize: none;
+    height: 65px;
+
+    padding: 12px;
+    border-radius: 12px;
+
+    border: 1px solid rgba(0,0,0,0.15);
     outline: none;
-    overflow-y: scroll;
-    background-color: light-dark(#f5f5f5, light-grey);
-    font-size: 16px;
-    color: light-dark(#000000, #e0e0e0);
-    font-weight: 600;
-    margin-top: -10px;
-    margin-left: -15px;
+    resize: none;
+
+    font-size: 15px;
+
+    background-color: light-dark(#ffffff, #1e293b);
+    color: light-dark(var(--text-light), var(--text-dark));
 }
 
+/* Send button */
 #send_btn {
-    width: 100%;
-    padding: 8px;
-    border: 0;
-    outline: none;
-    font-size: 20px;
+    padding: 13px;
+
+    border: none;
+    border-radius: 12px;
+
+    font-size: 15px;
     font-weight: 600;
-    border-radius: 10px;
-    background-color: light-dark(#f5f5f5, light-grey);
+
     cursor: pointer;
-    color: light-dark(#000000, #e0e0e0);
-    margin-top: 12px;
+
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+
+    transition: all 0.2s ease;
+}
+
+#send_btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
+}
+
+/* ---------------- */
+/* 🎬 RESULTS GRID */
+/* ---------------- */
+
+.results_grid {
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    padding: 10px 0;
+
+    scroll-behavior: smooth;
+}
+
+/* Card */
+.card {
+    min-width: 150px;
+    max-width: 150px;
+
+    cursor: pointer;
+    text-align: center;
+
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    transform: scale(1.08);
+}
+
+/* Poster */
+.card img {
+    width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+}
+
+/* Placeholder */
+.no-image {
+    width: 100%;
+    height: 220px;
+
+    border-radius: 14px;
+
+    background: linear-gradient(135deg, #475569, #1e293b);
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 12px;
+}
+
+/* Card text */
+.card_info {
+    margin-top: 6px;
+}
+
+.media_type {
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+.card_info p {
+    font-size: 13px;
+    margin-top: 3px;
+}
+
+/* Scrollbar */
+.results_grid::-webkit-scrollbar {
+    height: 6px;
+}
+
+.results_grid::-webkit-scrollbar-thumb {
+    background: #6366f1;
+    border-radius: 10px;
+}
+
+/* Mobile fallback */
+@media (max-width: 600px) {
+    .chat_box {
+        width: 95vw;
+        height: 95vh;
+    }
+
+    .chat_bot_body p {
+        max-width: 80%;
+        font-size: 14px;
+    }
+
+    .card {
+        min-width: 120px;
+    }
 }

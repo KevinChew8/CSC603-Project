@@ -2,6 +2,13 @@ from flask import Flask, render_template, request, jsonify
 import requests
 import re
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+#load the environment
+load_dotenv()
+
+API_KEY = os.getenv("API_KEY")
 
 # -----------------------------
 # MODEL SETUP (AUTO DOWNLOAD)
@@ -117,7 +124,6 @@ def get_recommendations(model, user_input):
 # TMDb POSTER FETCH (MOVIES ONLY)
 # -----------------------------
 
-API_KEY = ""
 
 def get_movie_poster(title):
     url = "https://api.themoviedb.org/3/search/movie"

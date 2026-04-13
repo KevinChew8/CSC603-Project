@@ -14,7 +14,7 @@ API_KEY = os.getenv("API_KEY")
 # MODEL SETUP (AUTO DOWNLOAD)
 # -----------------------------
 
-MODEL_PATH = Path("./Meta-Llama-3.1-8B-Instruct-Q8_0.gguf")
+MODEL_PATH = Path("E:/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf")
 
 MODEL_URL = "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
 
@@ -30,28 +30,22 @@ def download_model():
 
     print("Download complete!")
 
-if not MODEL_PATH.exists():
-    download_model()
+# if not MODEL_PATH.exists():
+#    download_model()
 
 # -----------------------------
 # LOAD LLM
 # -----------------------------
 
-from llama_cpp import Llama
+# from llama_cpp import Llama
 
-llama3 = Llama(
-    model_path=str(MODEL_PATH),
-    verbose=False,
-    n_gpu_layers=-1,
-    n_ctx=8192,
-)
 
 def generate_response(_model, _messages):
-    return _model.create_chat_completion(
-        _messages,
-        max_tokens=200,
-        temperature=0.5,
-    )["choices"][0]["message"]["content"]
+    return """1. [Movie] Inception
+2. [Music] Blinding Lights - The Weeknd
+3. [Book] The Hobbit
+4. [Game] The Legend of Zelda
+5. [Movie] Interstellar"""
 
 # -----------------------------
 # RECOMMENDATION LOGIC
@@ -157,7 +151,7 @@ def recommend():
     data = request.get_json()
     user_input = data.get("query")
 
-    items = get_recommendations(llama3, user_input)
+    items = get_recommendations(None, user_input)
 
     results = []
     for item in items:

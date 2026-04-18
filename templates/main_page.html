@@ -5,41 +5,24 @@
     <title>Suggestify</title>
     <link rel="stylesheet" href="{{url_for('static', filename='css/main_page.css')}}">
 </head>
-
-<!-- Incorporating a header to make it look more professional -->
-<header class="app_header">
-    <div class="header_content">
-        <h1 class="logo"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo"> MOODSHELF </h1>
-        <nav class="nav_links">
-            <a href="#">Sign In</a>
-        </nav>
-    </div>
-</header>
-
-<!-- Making animated text to make things pretty -->
 <body>
-    <div class="hero">
-    <div class="helpText">
-        <span id="animatedText"></span>
-    </div>
+
+<div class = "tv-box">
+    <img src = "static\images\tv_bg.png">
 </div>
 
 <div class="chat_box">
-    <!--<div class="chat_bot_title">Suggestify</div> -->
+    <div class="chat_bot_title">Suggestify</div>
 
     <ul class="chat_bot_body">
         <li class="chat_bot_in">
+            <p>What do you feel like exploring? (movies, music, books, games)</p>
         </li>
     </ul>
 
     <div class="chat_bot_input">
         <textarea id="user_input" placeholder="Try: comedy horror, chill music, story games..."></textarea>
         <button id="send_btn">Send</button>
-    </div>
-
-     <!-- Making a seperate area for the  -->
-    <div class="results_panel">
-        <div class="results_grid" id="results_grid"></div>
     </div>
 </div>
 
@@ -52,7 +35,6 @@ sendBtn.addEventListener("click", async () => {
     const userText = inputBox.value.trim();
     if (!userText) return;
 
-    document.body.classList.add("chat-active");
     // Show user message
     chatBody.innerHTML += `
         <li class="chat_bot_out">
@@ -120,42 +102,6 @@ inputBox.addEventListener("keypress", function(e) {
         sendBtn.click();
     }
 });
-
-// Just some animations for a more professional app
-
-const phrases = [
-  "What do you feel like exploring?",
-  "What would you like to watch? Read?",
-  "Want to discover something new?",
-  "What are you in the mood for?"
-];
-
-const el = document.getElementById("animatedText");
-
-let index = 0;
-
-function showNextText() {
-  if (!el) return;
-
-  el.classList.remove("fade-in");
-  el.classList.add("fade-out");
-
-  setTimeout(() => {
-    el.textContent = phrases[index];
-    index = (index + 1) % phrases.length;
-
-    el.classList.remove("fade-out");
-    el.classList.add("fade-in");
-  }, 200);
-}
-
-// init
-if (el) {
-  el.textContent = phrases[0];
-  el.classList.add("fade-in");
-
-  setInterval(showNextText, 3000);
-}
 </script>
 
 </body>

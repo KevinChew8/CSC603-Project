@@ -1,3 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&family=Rye&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Radley:ital@0;1&display=swap');
+
+
 :root {
     color-scheme: light dark;
 
@@ -30,6 +34,32 @@
     padding: 0;
 }
 
+.chat_bot_title {
+  position: absolute;
+  left:69%;
+  top: 16.5%;
+  font-size: 28px;
+  font-weight: bolder;
+  font-family: Rye, serif;
+  background: linear-gradient(rgb(27, 25, 24), rgb(35, 31, 19));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Making a shelf background */
+
+.screen {
+      background: black;
+  position: absolute;
+
+  width: 950px;
+  height: 550px;
+
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%);
+}
+
 .tv-box img{
   position: absolute;
   top: 50%;
@@ -39,6 +69,28 @@
   height: 100vh;
   width: auto;
 }
+
+.wall img {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+}
+
+.table img{
+  width: 204vh;
+  height: 75vh;
+  margin-top: 40vh;
+  position: absolute;
+
+}
+
+.dvds img {
+  position: absolute;
+  height: 500px;
+  width: 500px;
+  transform: translate(-35%, 53%);
+}
+
 /* Chat container */
 .chat_box {
     width: 45vw;
@@ -48,19 +100,13 @@
     display: flex;
     flex-direction: column;
 
-    border-radius: 20px;
+    border-radius: 50px;
     overflow: hidden;
 
     position: absolute;
     left: 22%;
     top: 20%;
 }
-
-.chat_bot_title {
-  text-align: center;
-  padding-bottom: 10px;
-}
-
 
 /* Chat body */
 .chat_bot_body {
@@ -75,7 +121,8 @@
     gap: 18px;
 
     scroll-behavior: smooth;
-    
+    scrollbar-width: none;
+
 }
 
 /* Message container */
@@ -108,7 +155,7 @@
 }
 
 .chat_bot_out p {
-    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    background: linear-gradient(135deg, #c3a166, #acacbd);
     color: white;
 }
 
@@ -117,9 +164,8 @@
     padding: 18px;
     border-top: 1px solid rgba(0,0,0,0.08);
 
-
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 12px;
 }
 
@@ -157,6 +203,7 @@
     color: white;
 
     transition: all 0.2s ease;
+
 }
 
 #send_btn:hover {
@@ -164,23 +211,19 @@
     box-shadow: 0 8px 20px rgba(99,102,241,0.4);
 }
 
-/* ---------------- */
-/* 🎬 RESULTS GRID */
-/* ---------------- */
+/* RESULTS */
 
 .results_grid {
     display: flex;
     gap: 18px;
-    overflow-x: auto;
     padding: 10px 0;
-
+    
+    flex-direction: column;
     scroll-behavior: smooth;
 }
 
 /* Card */
 .card {
-    min-width: 150px;
-    max-width: 150px;
 
     cursor: pointer;
     text-align: center;
@@ -228,7 +271,6 @@
 
 .card_info p {
     font-size: 13px;
-    margin-top: 3px;
 }
 
 /* Scrollbar */

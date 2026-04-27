@@ -33,17 +33,21 @@
 /* Body */
 body {
     font-family: "Inter", system-ui, sans-serif;
-    background: linear-gradient(135deg, #141414, #0f0f0f);
-    background-color: light-dark(var(--bg-light), var(--bg-dark));
+
+    background: radial-gradient(circle at top, #1e1b4b, #020617);
+    color: light-dark(var(--text-light), var(--text-dark));
 
     display: flex;
     justify-content: center;
     align-items: center;
+
     height: 100vh;
     padding: 25px;
 }
 
-/* Chat container */
+/* ---------------- */
+/* CHAT CONTAINER */
+/* ---------------- */
 .chat_box {
     width: 75vw;
     max-width: 1200px;
@@ -56,22 +60,21 @@ body {
     overflow: hidden;
 
     background: light-dark(var(--chat-light), var(--chat-dark));
-    box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
 }
 
-/* 🔥 IMPROVED HEADER */
+/* Header */
 .chat_bot_title {
-    padding: 25px 20px;
-    font-size: 26px;
+    padding: 28px 20px;
+    font-size: 28px;
     font-weight: 700;
-    letter-spacing: 0.5px;
 
     text-align: center;
 
     background: linear-gradient(135deg, #4f46e5, #6366f1, #3b82f6);
     color: white;
 
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    letter-spacing: 0.5px;
 }
 
 /* Chat body */
@@ -85,16 +88,13 @@ body {
     display: flex;
     flex-direction: column;
     gap: 18px;
-
-    scroll-behavior: smooth;
 }
 
-/* Message container */
+/* Messages */
 .chat_bot_body li {
     display: flex;
 }
 
-/* Message bubbles */
 .chat_bot_body p {
     padding: 14px 18px;
     border-radius: 18px;
@@ -103,17 +103,16 @@ body {
     line-height: 1.5;
 }
 
-/* Bot messages */
+/* Bot */
 .chat_bot_in {
     justify-content: flex-start;
 }
 
 .chat_bot_in p {
     background-color: light-dark(var(--bot-light), var(--bot-dark));
-    color: light-dark(var(--text-light), var(--text-dark));
 }
 
-/* User messages */
+/* User */
 .chat_bot_out {
     justify-content: flex-end;
 }
@@ -123,12 +122,10 @@ body {
     color: white;
 }
 
-/* Input area */
+/* Input */
 .chat_bot_input {
     padding: 18px;
-    border-top: 1px solid rgba(0,0,0,0.08);
-
-    background-color: light-dark(#ffffff, #020617);
+    border-top: 1px solid rgba(255,255,255,0.05);
 
     display: flex;
     flex-direction: column;
@@ -143,20 +140,19 @@ body {
     padding: 12px;
     border-radius: 12px;
 
-    border: 1px solid rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.1);
     outline: none;
-    resize: none;
 
+    resize: none;
     font-size: 15px;
 
-    background-color: light-dark(#ffffff, #1e293b);
-    color: light-dark(var(--text-light), var(--text-dark));
+    background-color: #1e293b;
+    color: white;
 }
 
-/* Send button */
+/* Button */
 #send_btn {
     padding: 13px;
-
     border: none;
     border-radius: 12px;
 
@@ -173,48 +169,45 @@ body {
 
 #send_btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
+    box-shadow: 0 10px 25px rgba(99,102,241,0.4);
 }
 
 /* ---------------- */
-/* 🎬 RESULTS GRID */
+/* RESULTS GRID */
 /* ---------------- */
-
 .results_grid {
     display: flex;
     gap: 18px;
     overflow-x: auto;
     padding: 10px 0;
-
-    scroll-behavior: smooth;
 }
 
 /* Card */
 .card {
-    min-width: 150px;
-    max-width: 150px;
+    min-width: 160px;
+    max-width: 160px;
 
-    cursor: pointer;
-    text-align: center;
-
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 .card:hover {
-    transform: scale(1.08);
+    transform: translateY(-6px) scale(1.05);
 }
 
 /* Poster */
 .card img {
     width: 100%;
+    height: 230px;
+    object-fit: cover;
+
     border-radius: 14px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
 
 /* Placeholder */
 .no-image {
     width: 100%;
-    height: 220px;
+    height: 230px;
 
     border-radius: 14px;
 
@@ -228,9 +221,10 @@ body {
     font-size: 12px;
 }
 
-/* Card text */
+/* Card info */
 .card_info {
-    margin-top: 6px;
+    margin-top: 8px;
+    text-align: center;
 }
 
 .media_type {
@@ -243,6 +237,34 @@ body {
     margin-top: 3px;
 }
 
+/* Rating */
+.rating {
+    font-size: 12px;
+    margin-top: 4px;
+    opacity: 0.85;
+}
+
+/* Save button */
+.card button {
+    margin-top: 6px;
+    padding: 6px 8px;
+
+    font-size: 12px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: var(--accent);
+    color: white;
+
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.card button:hover {
+    background: #4f46e5;
+}
+
 /* Scrollbar */
 .results_grid::-webkit-scrollbar {
     height: 6px;
@@ -253,7 +275,95 @@ body {
     border-radius: 10px;
 }
 
-/* Mobile fallback */
+/* ---------------- */
+/* ⭐ FAVORITES SIDEBAR */
+/* ---------------- */
+.favorites_panel {
+    position: fixed;
+    left: 0;
+    top: 0;
+
+    width: 280px;
+    height: 100%;
+
+    background: #020617;
+    padding: 20px;
+
+    overflow-y: auto;
+    z-index: 1000;
+
+    box-shadow: 8px 0 30px rgba(0,0,0,0.5);
+
+    transition: transform 0.3s ease;
+}
+
+/* Hidden state */
+.favorites_panel.hidden {
+    transform: translateX(-100%);
+}
+
+/* Header */
+.favorites_header {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+/* List */
+.favorites_list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Item */
+.favorite_item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.favorite_item img {
+    width: 50px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.favorite_item p {
+    font-size: 13px;
+}
+
+/* Toggle button */
+#toggle_favs_btn {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+
+    padding: 12px 14px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: var(--accent);
+    color: white;
+
+    font-size: 16px;
+
+    cursor: pointer;
+    z-index: 1100;
+
+    box-shadow: 0 10px 25px rgba(99,102,241,0.4);
+}
+
+#toggle_favs_btn:hover {
+    transform: scale(1.05);
+}
+
+/* ---------------- */
+/* MOBILE */
+/* ---------------- */
 @media (max-width: 600px) {
     .chat_box {
         width: 95vw;
@@ -266,6 +376,6 @@ body {
     }
 
     .card {
-        min-width: 120px;
+        min-width: 130px;
     }
 }

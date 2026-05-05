@@ -1,27 +1,4 @@
-:root {
-    color-scheme: light dark;
 
-    /* Backgrounds */
-    --bg-light: #eef2ff;
-    --bg-dark: #020617;
-
-    --chat-light: #ffffff;
-    --chat-dark: #0f172a;
-
-    /* Messages */
-    --bot-light: #e2e8f0;
-    --bot-dark: #1e293b;
-
-    --user-light: #4f46e5;
-    --user-dark: #6366f1;
-
-    /* Text */
-    --text-light: #0f172a;
-    --text-dark: #e2e8f0;
-
-    /* Accent */
-    --accent: #6366f1;
-}
 
 /* Reset */
 * {
@@ -30,7 +7,6 @@
     padding: 0;
 }
 
-/* Body */
 body {
     font-family: "Inter", system-ui, sans-serif;
 
@@ -128,8 +104,10 @@ body {
     border-top: 1px solid rgba(255,255,255,0.05);
 
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    justify-content: flex-end; 
+    padding: 10px;
+    margin-top: 150px;
+    margin-right: 200px;
 }
 
 /* Textarea */

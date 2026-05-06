@@ -362,6 +362,66 @@ body {
 }
 
 /* ---------------- */
+/* DISLIKES */
+/* ---------------- */
+#toggle_dis_btn {
+    position: fixed;
+    left: 80px;
+    bottom: 20px;
+
+    padding: 12px 14px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: var(--accent);
+    color: white;
+
+    font-size: 16px;
+
+    cursor: pointer;
+    z-index: 1100;
+
+    box-shadow: 0 10px 25px rgba(99,102,241,0.4);
+}
+
+#toggle_dis_btn:hover {
+    transform: scale(1.05);
+}
+
+/*
+POSTER MODE
+*/
+#toggle_pos_btn {
+    position: fixed;
+    right: 70px;
+    bottom: 20px;
+
+    padding: 12px 14px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: var(--accent);
+    color: white;
+
+    font-size: 16px;
+
+    cursor: pointer;
+    z-index: 1100;
+
+    box-shadow: 0 10px 25px rgba(99,102,241,0.4);
+}
+
+#toggle_pos_btn:hover {
+    transform: scale(1.05);
+}
+
+.toggle_pos_btn.active {
+    transform: scale(1.05);
+}
+
+/* ---------------- */
 /* MOBILE */
 /* ---------------- */
 @media (max-width: 600px) {

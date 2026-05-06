@@ -87,7 +87,7 @@ def parse_item(item):
     return media_type, title
 
 
-def get_recommendations(model, user_input):
+def get_recommendations(model, user_input, favs, dis):
     system_prompt = (
         "You are a multimedia recommendation engine.\n\n"
         "Recommend movies, books, and video games.\n\n"
@@ -101,6 +101,13 @@ def get_recommendations(model, user_input):
         "  2. [Game] The Last of Us\n"
         "  3. [Book] It - Stephen King\n"
     )
+
+    #only adds to prompt if user has favorites
+    if favs:
+        system_prompt = system_prompt + f"\nThe recommendations should also be similar to {favs}\n"
+
+    if dis:
+        system_prompt = system_prompt + f"\nThe recommendations should avoid being similar to {dis}\n"
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -206,26 +213,33 @@ def main_page():
 def recommend():
     data = request.get_json()
     user_input = data.get("query")
+    favs = [row["title"] for row in data.get("favs")]
+    dis = [row["title"] for row in data.get("dis")]
+    posMode = data.get("posMode")
 
-    items = get_recommendations(llama3, user_input)
+    items = get_recommendations(llama3, user_input, favs, dis)
 
     results = []
 
     for item in items:
         title = item["title"]
         media_type = item["type"]
+        print(media_type)
 
-        if media_type == "movie":
-            data = get_movie_data(title)
-
-        elif media_type == "game":
-            data = get_game_data(title)
-
-        elif media_type == "book":
-            data = get_book_data(title)
-
+        if posMode == True:
+           data = {"poster": None, "rating": None}
         else:
-            data = {"poster": None, "rating": None}
+            if media_type == "movie":
+                data = get_movie_data(title)
+
+            elif media_type == "game":
+                data = get_game_data(title)
+
+            elif media_type == "book":
+                data = get_book_data(title)
+
+            else:
+                data = {"poster": None, "rating": None}  
 
         results.append({
             "title": title,

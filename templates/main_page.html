@@ -15,6 +15,17 @@
 
 <button id="toggle_favs_btn">⭐</button>
 
+<!-- ❌ DISLIKES SIDEBAR -->
+<div id="dislikes_panel" class="favorites_panel hidden">
+    <div class="favorites_header">❌ Dislikes</div>
+    <div id="dislikes_list" class="favorites_list"></div>
+</div>
+
+<button id="toggle_dis_btn">❌</button>
+
+<!-- POSTER MODE SIDEBAR -->
+<button id="toggle_pos_btn" class="toggle_pos_btn">Poster Mode ON</button>
+
 <!-- MAIN CHAT -->
 <div class="chat_box">
     <div class="chat_bot_title">Suggestify</div>
@@ -45,6 +56,13 @@ function saveFavorites(favs) {
 
 function toggleFavorite(item, buttonEl) {
     let favs = getFavorites();
+    let dis = getDislikes();
+
+    //To prevent title from being both favorite and dislike
+    //should find a good way to notify user
+    if (dis.findIndex(f => f.title === item.title) > -1){
+        return;
+    }
 
     const index = favs.findIndex(f => f.title === item.title);
 
@@ -75,14 +93,89 @@ function removeFavorite(title) {
 }
 
 // -----------------------------
+// DISLIKES
+// -----------------------------
+function getDislikes() {
+    return JSON.parse(localStorage.getItem("dislikes") || "[]");
+}
+
+function saveDislikes(dis) {
+    localStorage.setItem("dislikes", JSON.stringify(dis));
+}
+
+function toggleDislikes(item, buttonEl) {
+    let dis = getDislikes();
+    let favs = getFavorites();
+
+    //To prevent title from being both favorite and dislike
+    if (favs.findIndex(f => f.title === item.title) > -1){
+        return;
+    }
+
+    const index = dis.findIndex(f => f.title === item.title);
+
+    let isNowSaved;
+
+    if (index > -1) {
+        dis.splice(index, 1);
+        isNowSaved = false;
+    } else {
+        dis.push(item);
+        isNowSaved = true;
+    }
+
+    saveDislikes(dis);
+
+    buttonEl.innerText = isNowSaved ? "❌ Disliked" : "❌ Dislike";
+
+    renderDislikes();
+}
+
+function removeDislikes(title) {
+    let dis = getDislikes();
+    dis = dis.filter(f => f.title !== title);
+
+    saveDislikes(dis);
+
+    renderDislikes();
+}
+
+// -----------------------------
+// POSTER MODE
+// -----------------------------
+
+
+// -----------------------------
 // SIDEBAR
 // -----------------------------
 const favPanel = document.getElementById("favorites_panel");
 const favBtn = document.getElementById("toggle_favs_btn");
 
+const disPanel = document.getElementById("dislikes_panel");
+const disBtn = document.getElementById("toggle_dis_btn");
+
+const posBtn = document.getElementById("toggle_pos_btn");
+
 favBtn.addEventListener("click", () => {
     favPanel.classList.toggle("hidden");
+    disPanel.classList.toggle("hidden", true)
     renderFavorites();
+});
+
+disBtn.addEventListener("click", () => {
+    favPanel.classList.toggle("hidden", true);
+    disPanel.classList.toggle("hidden")
+    renderDislikes();
+});
+
+posBtn.addEventListener("click", () => {
+    posBtn.classList.toggle('active');
+
+    if(posBtn.classList.contains('active')){
+        posBtn.innerText = "Poster Mode OFF"
+    } else{
+        posBtn.innerText = "Poster Mode ON"
+    }
 });
 
 function renderFavorites() {
@@ -100,19 +193,62 @@ function renderFavorites() {
         const searchQuery = encodeURIComponent(item.title);
 
         container.innerHTML += `
-            <div class="favorite_item">
+            <div class="favorite_item">`;
 
+        if(!(posBtn.classList.contains('active'))){
+            container.innerHTML +=`
+                <div onclick="window.open('https://www.google.com/search?q=${searchQuery}', '_blank')">
+                ${
+                    item.poster
+                    ? `<img src="${item.poster}">`
+                    : `<div class="no-image small">N/A</div>`
+                }
+                </div>`;
+        }
+        
+        container.innerHTML +=`
+                <p>${item.title}</p>
+
+                <button onclick='event.stopPropagation(); removeFavorite("${item.title}")'>
+                    ❌
+                </button>
+
+            </div>
+        `;
+    });
+}
+
+function renderDislikes() {
+    const container = document.getElementById("dislikes_list");
+    const dis = getDislikes();
+
+    container.innerHTML = "";
+
+    if (dis.length === 0) {
+        container.innerHTML = "<p>No Dislikes yet</p>";
+        return;
+    }
+
+    dis.forEach(item => {
+        const searchQuery = encodeURIComponent(item.title);
+
+        container.innerHTML += `
+            <div class="favorite_item">`;
+
+        if(!(posBtn.classList.contains('active'))){
+            container.innerHTML +=`
                 <div onclick="window.open('https://www.google.com/search?q=${searchQuery}', '_blank')">
                     ${
                         item.poster
                         ? `<img src="${item.poster}">`
                         : `<div class="no-image small">N/A</div>`
                     }
-                </div>
-
+                </div>`;
+        }
+        container.innerHTML +=`
                 <p>${item.title}</p>
 
-                <button onclick='event.stopPropagation(); removeFavorite("${item.title}")'>
+                <button onclick='event.stopPropagation(); removeDislikes("${item.title}")'>
                     ❌
                 </button>
 
@@ -130,6 +266,10 @@ const chatBody = document.querySelector(".chat_bot_body");
 
 sendBtn.addEventListener("click", async () => {
     const userText = inputBox.value.trim();
+    const favs = getFavorites();
+    const dis = getDislikes();
+    const posMode = posBtn.classList.contains('active')
+
     if (!userText) return;
 
     chatBody.innerHTML += `
@@ -147,11 +287,11 @@ sendBtn.addEventListener("click", async () => {
     `;
 
     chatBody.scrollTop = chatBody.scrollHeight;
-
+    
     const response = await fetch("/recommend", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ query: userText })
+        body: JSON.stringify({ query: userText, favs: favs, dis: dis, posMode: posMode })
     });
 
     const data = await response.json();
@@ -161,28 +301,39 @@ sendBtn.addEventListener("click", async () => {
 
     data.forEach(item => {
         const searchQuery = encodeURIComponent(item.title);
-        const favs = getFavorites();
         const isFav = favs.some(f => f.title === item.title);
+        const isDis = dis.some(f => f.title === item.title);
 
         botHTML += `
-            <div class="card">
+            <div class="card">`;
 
+        if(!(posMode)){
+            botHTML +=`
                 <div onclick="window.open('https://www.google.com/search?q=${searchQuery}', '_blank')">
                     ${
                         item.poster 
                         ? `<img src="${item.poster}">`
                         : `<div class="no-image">No Image</div>`
                     }
-                </div>
+                </div>`;
+        }
 
+        botHTML +=`
                 <div class="card_info">
-                    <span class="media_type">[${item.type.toUpperCase()}]</span>
-                    <p>${item.title}</p>
+                   <span class="media_type">[${item.type.toUpperCase()}]</span>
+                   <p>${item.title}</p>`;
 
-                    ${item.rating ? `<div class="rating">⭐ ${item.rating}</div>` : ""}
-
+        if(!(posMode)){
+            botHTML +=`
+            ${item.rating ? `<div class="rating">⭐ ${item.rating}</div>` : ""}`;
+        }
+        
+        botHTML +=`
                     <button onclick='event.stopPropagation(); toggleFavorite(${JSON.stringify(item)}, this)'>
                         ${isFav ? "⭐ Saved" : "⭐ Save"}
+                    </button>
+                     <button onclick='event.stopPropagation(); toggleDislikes(${JSON.stringify(item)}, this)'>
+                        ${isDis ? "❌ Disliked" : "❌ Dislike"}
                     </button>
                 </div>
 

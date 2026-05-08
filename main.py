@@ -5,16 +5,21 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-#load the environment
+# -----------------------------
+# LOAD ENV
+# -----------------------------
+
 load_dotenv()
 
-API_KEY = os.getenv("API_KEY")
+TMDB_API_KEY = os.getenv("API_KEY")      
+RAWG_API_KEY = os.getenv("RAWG_API_KEY") 
+SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 
 # -----------------------------
 # MODEL SETUP (AUTO DOWNLOAD)
 # -----------------------------
 
-MODEL_PATH = Path("E:/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf")
+MODEL_PATH = Path("./Meta-Llama-3.1-8B-Instruct-Q8_0.gguf")
 
 MODEL_URL = "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf"
 
@@ -30,22 +35,28 @@ def download_model():
 
     print("Download complete!")
 
-# if not MODEL_PATH.exists():
-#    download_model()
+if not MODEL_PATH.exists():
+    download_model()
 
 # -----------------------------
 # LOAD LLM
 # -----------------------------
 
-# from llama_cpp import Llama
+from llama_cpp import Llama
 
+llama3 = Llama(
+    model_path=str(MODEL_PATH),
+    verbose=False,
+    n_gpu_layers=-1,
+    n_ctx=8192,
+)
 
 def generate_response(_model, _messages):
-    return """1. [Movie] Inception
-2. [Music] Blinding Lights - The Weeknd
-3. [Book] The Hobbit
-4. [Game] The Legend of Zelda
-5. [Movie] Interstellar"""
+    return _model.create_chat_completion(
+        _messages,
+        max_tokens=200,
+        temperature=0.2,
+    )["choices"][0]["message"]["content"]
 
 # -----------------------------
 # RECOMMENDATION LOGIC
@@ -64,10 +75,6 @@ def extract_items(text):
 
 
 def parse_item(item):
-    """
-    Extract media type and title
-    Example: [Movie] Get Out
-    """
     match = re.match(r"\[(.*?)\]\s*(.*)", item)
 
     if match:
@@ -80,21 +87,27 @@ def parse_item(item):
     return media_type, title
 
 
-def get_recommendations(model, user_input):
+def get_recommendations(model, user_input, favs, dis):
     system_prompt = (
         "You are a multimedia recommendation engine.\n\n"
-        "You recommend movies, music, books, and video games.\n\n"
+        "Recommend movies, books, and video games.\n\n"
         "STRICT RULES:\n"
         "- Output EXACTLY 5 items\n"
-        "- Each item must include a media tag:\n"
-        "  [Movie], [Music], [Book], or [Game]\n"
+        "- Use tags: [Movie], [Book], [Game]\n"
         "- NO explanations\n"
-        "- NO extra text\n"
         "- ONLY numbered list\n"
-        "- Format exactly like:\n"
+        "- Example:\n"
         "  1. [Movie] Get Out\n"
-        "  2. [Music] Thriller - Michael Jackson\n"
+        "  2. [Game] The Last of Us\n"
+        "  3. [Book] It - Stephen King\n"
     )
+
+    #only adds to prompt if user has favorites
+    if favs:
+        system_prompt = system_prompt + f"\nThe recommendations should also be similar to {favs}\n"
+
+    if dis:
+        system_prompt = system_prompt + f"\nThe recommendations should avoid being similar to {dis}\n"
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -115,25 +128,75 @@ def get_recommendations(model, user_input):
     return parsed
 
 # -----------------------------
-# TMDb POSTER FETCH (MOVIES ONLY)
+# 🎬 MOVIES (TMDb)
 # -----------------------------
 
-
-def get_movie_poster(title):
+def get_movie_data(title):
     url = "https://api.themoviedb.org/3/search/movie"
     params = {
-        "api_key": API_KEY,
+        "api_key": TMDB_API_KEY,
         "query": title,
     }
 
-    response = requests.get(url, params=params).json()
+    data = requests.get(url, params=params).json()
 
-    if response.get("results"):
-        for r in response["results"]:
+    if data.get("results"):
+        for r in data["results"]:
             if r.get("poster_path"):
-                return f"https://image.tmdb.org/t/p/w500{r['poster_path']}"
+                return {
+                    "poster": f"https://image.tmdb.org/t/p/w500{r['poster_path']}",
+                    "rating": r.get("vote_average")
+                }
 
-    return "https://via.placeholder.com/300x450?text=No+Image"
+    return {"poster": None, "rating": None}
+
+# -----------------------------
+# 🎮 GAMES (RAWG)
+# -----------------------------
+
+game_cache = {}
+
+def get_game_data(title):
+    url = "https://api.rawg.io/api/games"
+    params = {
+        "key": RAWG_API_KEY,
+        "search": title
+    }
+
+    data = requests.get(url, params=params).json()
+
+    if data.get("results"):
+        game = data["results"][0]
+
+        return {
+            "poster": game.get("background_image"),
+            "rating": game.get("rating")
+        }
+
+    return {"poster": None, "rating": None}
+# -----------------------------
+# 📚 BOOKS (Google Books)
+# -----------------------------
+
+book_cache = {}
+
+def get_book_data(title):
+    clean_title = re.sub(r"[^\w\s]", "", title)
+
+    url = "https://www.googleapis.com/books/v1/volumes"
+    params = {"q": clean_title, "maxResults": 1}
+
+    data = requests.get(url, params=params).json()
+
+    if "items" in data:
+        volume = data["items"][0]["volumeInfo"]
+
+        return {
+            "poster": volume.get("imageLinks", {}).get("thumbnail"),
+            "rating": volume.get("averageRating")
+        }
+
+    return {"poster": None, "rating": None}
 
 # -----------------------------
 # FLASK APP
@@ -150,22 +213,41 @@ def main_page():
 def recommend():
     data = request.get_json()
     user_input = data.get("query")
+    favs = [row["title"] for row in data.get("favs")]
+    dis = [row["title"] for row in data.get("dis")]
+    posMode = data.get("posMode")
 
-    items = get_recommendations(None, user_input)
+    items = get_recommendations(llama3, user_input, favs, dis)
 
     results = []
+
     for item in items:
-        if item["type"] == "movie":
-            poster = get_movie_poster(item["title"])
+        title = item["title"]
+        media_type = item["type"]
+        print(media_type)
+
+        if posMode == True:
+           data = {"poster": None, "rating": None}
         else:
-            poster = None
+            if media_type == "movie":
+                data = get_movie_data(title)
+
+            elif media_type == "game":
+                data = get_game_data(title)
+
+            elif media_type == "book":
+                data = get_book_data(title)
+
+            else:
+                data = {"poster": None, "rating": None}  
 
         results.append({
-            "title": item["title"],
-            "type": item["type"],
-            "poster": poster
+            "title": title,
+            "type": media_type,
+            "poster": data["poster"],
+            "rating": data["rating"]
         })
-
+        
     return jsonify(results)
 
 

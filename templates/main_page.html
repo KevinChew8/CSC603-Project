@@ -1,104 +1,529 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Suggestify</title>
-    <link rel="stylesheet" href="{{url_for('static', filename='css/main_page.css')}}">
+  <meta charset="UTF-8">
+  <title>Suggestify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main_page.css') }}">
+
 </head>
 <body>
-
-<div class="chat_box">
-    <div class="chat_bot_title">Suggestify</div>
-
-    <ul class="chat_bot_body">
-        <li class="chat_bot_in">
-            <p>What do you feel like exploring? (movies, music, books, games)</p>
-        </li>
-    </ul>
-
-    <div class="chat_bot_input">
-        <textarea id="user_input" placeholder="Try: comedy horror, chill music, story games..."></textarea>
-        <button id="send_btn">Send</button>
-    </div>
+ 
+<!-- SHARED BACKDROP -->
+<div class="panel-backdrop" id="panel_backdrop"></div>
+ 
+<!-- ★ FAVORITES SIDEBAR (left) -->
+<aside class="side-panel favorites-panel" id="favorites_panel" aria-label="Saved favorites">
+  <div class="panel-header">
+    <h2><span class="panel-header-icon amber">★</span> Saved</h2>
+    <button class="panel-close-btn" id="fav_close_btn" aria-label="Close favorites">×</button>
+  </div>
+  <div class="panel-list" id="favorites_list"></div>
+</aside>
+ 
+<!-- ✕ DISLIKES SIDEBAR (right) -->
+<aside class="side-panel dislikes-panel" id="dislikes_panel" aria-label="Disliked items">
+  <div class="panel-header">
+    <h2><span class="panel-header-icon red">✕</span> Disliked</h2>
+    <button class="panel-close-btn" id="dis_close_btn" aria-label="Close dislikes">×</button>
+  </div>
+  <div class="panel-list" id="dislikes_list"></div>
+</aside>
+ 
+<!-- TOGGLE BUTTONS -->
+<button class="toggle-panel-btn toggle-fav-btn" id="toggle_favs_btn" aria-label="Toggle favorites">
+  <span class="star-icon">★</span>
+  <span class="label">Saved</span>
+</button>
+ 
+<button class="toggle-panel-btn toggle-dis-btn" id="toggle_dis_btn" aria-label="Toggle dislikes">
+  <span>✕</span>
+  <span class="label">Disliked</span>
+</button>
+ 
+<!-- POSTER MODE TOGGLE -->
+<button class="toggle-pos-btn" id="toggle_pos_btn" aria-label="Toggle poster mode">
+  <span class="pos-icon">⊡</span>
+  <span class="label">Poster Mode</span>
+</button>
+ 
+<!-- HERO -->
+<section class="hero" id="hero">
+  <p class="hero-eyebrow">Your personal taste engine</p>
+  <h1 class="hero-title">What are you in the<br>mood to <em>discover?</em></h1>
+  <p class="hero-sub">Films, books, games, — tell us what to find</p>
+ 
+  <div class="input-wrap" id="hero_input_wrap">
+    <textarea id="user_input" rows="1" placeholder="Try: slow-burn thriller, cozy puzzle games…"></textarea>
+    <button class="send-btn" id="send_btn">Search →</button>
+  </div>
+ 
+  <div class="hint-chips">
+    <span class="chip" onclick="fillAndSend('dark comedy series')">dark comedy series</span>
+    <span class="chip" onclick="fillAndSend('atmospheric horror games')">atmospheric horror games</span>
+    <span class="chip" onclick="fillAndSend('feel-good romance films')">feel-good romance films</span>
+    <span class="chip" onclick="fillAndSend('mind-bending sci-fi')">mind-bending sci-fi</span>
+  </div>
+</section>
+ 
+<!-- CHAT / RESULTS AREA -->
+<main class="chat-area" id="chat_area">
+  <div id="results_list"></div>
+</main>
+ 
+<!-- SEARCH AGAIN BUTTON -->
+<div class="search-again-bar" id="search_again_bar">
+  <button class="search-again-btn" id="search_again_btn">Search again</button>
 </div>
-
+ 
+<!-- FOOTER -->
+<footer>
+  <div style="max-width:700px; margin:0 auto;">
+    <h3>Suggestify — Group Project</h3>
+    <p>Course: CSC 603 - Gen AI &nbsp;·&nbsp; Instructor: Professor Chen</p>
+    <ul>
+      <li>Jonathan Carbajal &nbsp;·&nbsp; Kevin Chew &nbsp;·&nbsp; Liecie Salvador</li>
+    </ul>
+    <div class="footer-links">
+      <a href="#">Project Report</a>
+      <a href="#">GitHub Repo</a>
+      <a href="#">Presentation Slides</a>
+    </div>
+    <p class="copyright">© 2026 Student Project. For educational purposes only.</p>
+  </div>
+</footer>
+ 
 <script>
-const sendBtn = document.getElementById("send_btn");
-const inputBox = document.getElementById("user_input");
-const chatBody = document.querySelector(".chat_bot_body");
-
-sendBtn.addEventListener("click", async () => {
-    const userText = inputBox.value.trim();
-    if (!userText) return;
-
-    // Show user message
-    chatBody.innerHTML += `
-        <li class="chat_bot_out">
-            <p>${userText}</p>
-        </li>
-    `;
-
-    inputBox.value = "";
-
-    // Loading message
-    chatBody.innerHTML += `
-        <li class="chat_bot_in" id="loading">
-            <p>Thinking...</p>
-        </li>
-    `;
-
-    chatBody.scrollTop = chatBody.scrollHeight;
-
-    // Call backend
-    const response = await fetch("/recommend", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ query: userText })
-    });
-
-    const data = await response.json();
-
-    // Remove loading
-    document.getElementById("loading").remove();
-
-    // Show results
-    let botHTML = `<li class="chat_bot_in"><div class="results_grid">`;
-
-    data.forEach(item => {
-        const searchQuery = encodeURIComponent(item.title);
-
-        botHTML += `
-            <div class="card" onclick="window.open('https://www.google.com/search?q=${searchQuery}', '_blank')">
-                ${
-                    item.poster 
-                    ? `<img src="${item.poster}">`
-                    : `<div class="no-image">No Image</div>`
-                }
-                <div class="card_info">
-                    <span class="media_type">[${item.type.toUpperCase()}]</span>
-                    <p>${item.title}</p>
-                </div>
-            </div>
-        `;
-    });
-
-    botHTML += `</div></li>`;
-
-    chatBody.innerHTML += botHTML;
-
-    chatBody.scrollTop = chatBody.scrollHeight;
-});
-
-// Optional: press Enter to send
-inputBox.addEventListener("keypress", function(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendBtn.click();
+// ───────────────────────────────────────────────
+// STATE
+// ───────────────────────────────────────────────
+let hasSearched = false;
+let posterMode = false;
+ 
+// ───────────────────────────────────────────────
+// UTILITIES
+// ───────────────────────────────────────────────
+function escHtml(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+ 
+// ───────────────────────────────────────────────
+// FAVORITES
+// ───────────────────────────────────────────────
+function getFavorites() {
+  try { return JSON.parse(localStorage.getItem("suggestify_favorites") || "[]"); }
+  catch { return []; }
+}
+function saveFavorites(favs) {
+  localStorage.setItem("suggestify_favorites", JSON.stringify(favs));
+}
+function toggleFavorite(item, btnEl) {
+  // Can't favorite a disliked item
+  if (getDislikes().some(d => d.title === item.title)) return;
+  let favs = getFavorites();
+  const idx = favs.findIndex(f => f.title === item.title);
+  if (idx > -1) {
+    favs.splice(idx, 1);
+    btnEl.textContent = "★ Save";
+    btnEl.classList.remove("saved");
+  } else {
+    favs.push(item);
+    btnEl.textContent = "★ Saved";
+    btnEl.classList.add("saved");
+  }
+  saveFavorites(favs);
+  renderFavorites();
+}
+function removeFavorite(title) {
+  saveFavorites(getFavorites().filter(f => f.title !== title));
+  renderFavorites();
+  document.querySelectorAll(".card-save-btn[data-title]").forEach(btn => {
+    if (btn.dataset.title === title) {
+      btn.textContent = "★ Save";
+      btn.classList.remove("saved");
     }
+  });
+}
+function renderFavorites() {
+  const container = document.getElementById("favorites_list");
+  const favs = getFavorites();
+  container.innerHTML = "";
+  if (favs.length === 0) {
+    container.innerHTML = `<p class="panel-empty">Nothing saved yet.<br>Hit <strong>★ Save</strong> on any result.</p>`;
+    return;
+  }
+  favs.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "panel-item";
+    div.innerHTML = `
+      ${item.poster
+        ? `<img class="panel-item-img" src="${escHtml(item.poster)}" alt="${escHtml(item.title)}" loading="lazy">`
+        : `<div class="panel-item-no-img">N/A</div>`}
+      <div class="panel-item-info">
+        <p class="panel-item-title">${escHtml(item.title)}</p>
+        <p class="panel-item-type">${escHtml(item.type || '')}</p>
+      </div>
+      <button class="panel-remove-btn" aria-label="Remove ${escHtml(item.title)}">×</button>
+    `;
+    div.querySelector(".panel-item-img, .panel-item-no-img")?.addEventListener("click", () =>
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(item.title)}`, "_blank")
+    );
+    div.querySelector(".panel-remove-btn").addEventListener("click", e => {
+      e.stopPropagation();
+      removeFavorite(item.title);
+    });
+    container.appendChild(div);
+  });
+}
+ 
+// ───────────────────────────────────────────────
+// DISLIKES
+// ───────────────────────────────────────────────
+function getDislikes() {
+  try { return JSON.parse(localStorage.getItem("suggestify_dislikes") || "[]"); }
+  catch { return []; }
+}
+function saveDislikes(dis) {
+  localStorage.setItem("suggestify_dislikes", JSON.stringify(dis));
+}
+function toggleDislike(item, btnEl) {
+  // Can't dislike a favorited item
+  if (getFavorites().some(f => f.title === item.title)) return;
+  let dis = getDislikes();
+  const idx = dis.findIndex(d => d.title === item.title);
+  if (idx > -1) {
+    dis.splice(idx, 1);
+    btnEl.textContent = "✕ Dislike";
+    btnEl.classList.remove("disliked");
+  } else {
+    dis.push(item);
+    btnEl.textContent = "✕ Disliked";
+    btnEl.classList.add("disliked");
+  }
+  saveDislikes(dis);
+  renderDislikes();
+}
+function removeDislike(title) {
+  saveDislikes(getDislikes().filter(d => d.title !== title));
+  renderDislikes();
+  document.querySelectorAll(".card-dis-btn[data-title]").forEach(btn => {
+    if (btn.dataset.title === title) {
+      btn.textContent = "✕ Dislike";
+      btn.classList.remove("disliked");
+    }
+  });
+}
+function renderDislikes() {
+  const container = document.getElementById("dislikes_list");
+  const dis = getDislikes();
+  container.innerHTML = "";
+  if (dis.length === 0) {
+    container.innerHTML = `<p class="panel-empty">Nothing disliked yet.<br>Hit <strong>✕ Dislike</strong> on any result.</p>`;
+    return;
+  }
+  dis.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "panel-item";
+    div.innerHTML = `
+      ${item.poster
+        ? `<img class="panel-item-img" src="${escHtml(item.poster)}" alt="${escHtml(item.title)}" loading="lazy">`
+        : `<div class="panel-item-no-img">N/A</div>`}
+      <div class="panel-item-info">
+        <p class="panel-item-title">${escHtml(item.title)}</p>
+        <p class="panel-item-type">${escHtml(item.type || '')}</p>
+      </div>
+      <button class="panel-remove-btn" aria-label="Remove ${escHtml(item.title)}">×</button>
+    `;
+    div.querySelector(".panel-item-img, .panel-item-no-img")?.addEventListener("click", () =>
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(item.title)}`, "_blank")
+    );
+    div.querySelector(".panel-remove-btn").addEventListener("click", e => {
+      e.stopPropagation();
+      removeDislike(item.title);
+    });
+    container.appendChild(div);
+  });
+}
+ 
+// ───────────────────────────────────────────────
+// SIDEBAR PANEL LOGIC
+// ───────────────────────────────────────────────
+const backdrop = document.getElementById("panel_backdrop");
+const favPanel = document.getElementById("favorites_panel");
+const disPanel = document.getElementById("dislikes_panel");
+ 
+function closeAllPanels() {
+  favPanel.classList.remove("open");
+  disPanel.classList.remove("open");
+  backdrop.classList.remove("visible");
+}
+ 
+function openPanel(panel, renderFn) {
+  const isOpen = panel.classList.contains("open");
+  closeAllPanels();
+  if (!isOpen) {
+    panel.classList.add("open");
+    backdrop.classList.add("visible");
+    if (renderFn) renderFn();
+  }
+}
+ 
+document.getElementById("toggle_favs_btn").addEventListener("click", () => openPanel(favPanel, renderFavorites));
+document.getElementById("toggle_dis_btn").addEventListener("click", () => openPanel(disPanel, renderDislikes));
+document.getElementById("fav_close_btn").addEventListener("click", closeAllPanels);
+document.getElementById("dis_close_btn").addEventListener("click", closeAllPanels);
+backdrop.addEventListener("click", closeAllPanels);
+ 
+// ───────────────────────────────────────────────
+// POSTER MODE
+// ───────────────────────────────────────────────
+const posBtn = document.getElementById("toggle_pos_btn");
+posBtn.addEventListener("click", () => {
+  posterMode = !posterMode;
+  document.body.classList.toggle("poster-mode", posterMode);
+  posBtn.classList.toggle("active", posterMode);
+  posBtn.querySelector(".label").textContent = posterMode ? "Poster Mode OFF" : "Poster Mode";
+  posBtn.querySelector(".pos-icon").textContent = posterMode ? "⊠" : "⊡";
+});
+ 
+// ───────────────────────────────────────────────
+// HERO TRANSITION
+// ───────────────────────────────────────────────
+function showResultsView() {
+  if (hasSearched) return;
+  hasSearched = true;
+  const hero = document.getElementById("hero");
+  hero.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+  hero.style.opacity = "0";
+  hero.style.transform = "translateY(-12px)";
+  setTimeout(() => { hero.style.display = "none"; }, 370);
+  document.getElementById("chat_area").classList.add("active");
+  document.getElementById("search_again_bar").classList.add("active");
+  document.body.classList.add("has-results")
+}
+ 
+function returnToHero() {
+  const hero = document.getElementById("hero");
+  hero.style.display = "flex";
+  hero.style.opacity = "0";
+  hero.style.transform = "translateY(12px)";
+  requestAnimationFrame(() => {
+    hero.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+    hero.style.opacity = "1";
+    hero.style.transform = "translateY(0)";
+  });
+  const chatArea = document.getElementById("chat_area");
+  chatArea.style.transition = "opacity 0.3s ease";
+  chatArea.style.opacity = "0";
+  setTimeout(() => {
+    chatArea.classList.remove("active");
+    chatArea.style.opacity = "";
+    chatArea.style.transition = "";
+    document.getElementById("results_list").innerHTML = "";
+  }, 320);
+  document.getElementById("search_again_bar").classList.remove("active");
+  hasSearched = false;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  document.body.classList.remove("has-results")
+}
+document.getElementById("search_again_btn").addEventListener("click", returnToHero);
+ 
+// ───────────────────────────────────────────────
+// SEARCH
+// ───────────────────────────────────────────────
+async function performSearch(query) {
+  if (!query) return;
+  showResultsView();
+  const resultsList = document.getElementById("results_list");
+  const favs = getFavorites();
+  const dis = getDislikes();
+ 
+  const userMsg = document.createElement("div");
+  userMsg.className = "chat-msg msg-user";
+  userMsg.innerHTML = `<div class="msg-user-bubble">${escHtml(query)}</div>`;
+  resultsList.appendChild(userMsg);
+ 
+  const thinking = document.createElement("div");
+  thinking.className = "chat-msg msg-thinking";
+  thinking.id = "thinking_msg";
+  thinking.innerHTML = `<div class="thinking-dots"><span></span><span></span><span></span></div><span>Finding recommendations…</span>`;
+  resultsList.appendChild(thinking);
+ 
+  try {
+    const response = await fetch("/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, favs, dis })
+    });
+    const data = await response.json();
+    document.getElementById("thinking_msg")?.remove();
+    appendCarousel(data, resultsList);
+  } catch (err) {
+    document.getElementById("thinking_msg")?.remove();
+    const errMsg = document.createElement("div");
+    errMsg.className = "chat-msg";
+    errMsg.innerHTML = `<p style="color:var(--text-tertiary);font-size:13px;">Couldn't reach the server. Check your connection.</p>`;
+    resultsList.appendChild(errMsg);
+  }
+}
+ 
+// ───────────────────────────────────────────────
+// CAROUSEL
+// ───────────────────────────────────────────────
+function appendCarousel(data, container) {
+  const CARD_W = 200;
+  const GAP = 14;
+  let currentIndex = 0;
+  const favs = getFavorites();
+  const dis = getDislikes();
+ 
+  const wrapper = document.createElement("div");
+  wrapper.className = "chat-msg";
+ 
+  const cards = data.map(item => {
+    const isSaved = favs.some(f => f.title === item.title);
+    const isDisliked = dis.some(d => d.title === item.title);
+    const card = document.createElement("div");
+    card.className = "result-card";
+ 
+    const posterClick = () => window.open(`https://www.google.com/search?q=${encodeURIComponent(item.title)}`, "_blank");
+ 
+    if (item.poster) {
+      const img = document.createElement("img");
+      img.className = "card-poster";
+      img.src = item.poster;
+      img.alt = item.title;
+      img.loading = "lazy";
+      img.addEventListener("click", posterClick);
+      card.appendChild(img);
+    } else {
+      const ph = document.createElement("div");
+      ph.className = "card-poster-placeholder";
+      ph.textContent = "No image";
+      ph.addEventListener("click", posterClick);
+      card.appendChild(ph);
+    }
+ 
+    const body = document.createElement("div");
+    body.className = "card-body";
+    body.innerHTML = `
+      <span class="card-type">${escHtml((item.type || "media").toUpperCase())}</span>
+      <p class="card-title">${escHtml(item.title)}</p>
+      ${item.rating ? `<p class="card-rating"><span class="star">★</span> ${escHtml(String(item.rating))}</p>` : ""}
+    `;
+ 
+    // Actions row
+    const actions = document.createElement("div");
+    actions.className = "card-actions";
+ 
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "card-action-btn card-save-btn" + (isSaved ? " saved" : "");
+    saveBtn.textContent = isSaved ? "★ Saved" : "★ Save";
+    saveBtn.dataset.title = item.title;
+    saveBtn.addEventListener("click", () => toggleFavorite(item, saveBtn));
+ 
+    const disBtn = document.createElement("button");
+    disBtn.className = "card-action-btn card-dis-btn" + (isDisliked ? " disliked" : "");
+    disBtn.textContent = isDisliked ? "✕ Disliked" : "✕ Dislike";
+    disBtn.dataset.title = item.title;
+    disBtn.addEventListener("click", () => toggleDislike(item, disBtn));
+ 
+    actions.appendChild(saveBtn);
+    actions.appendChild(disBtn);
+    body.appendChild(actions);
+    card.appendChild(body);
+    return card;
+  });
+ 
+  const track = document.createElement("div");
+  track.className = "carousel-track";
+  cards.forEach(c => track.appendChild(c));
+ 
+  const trackOuter = document.createElement("div");
+  trackOuter.className = "carousel-track-outer";
+  trackOuter.appendChild(track);
+ 
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "carousel-btn prev";
+  prevBtn.innerHTML = "‹";
+  prevBtn.setAttribute("aria-label", "Previous");
+ 
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "carousel-btn next";
+  nextBtn.innerHTML = "›";
+  nextBtn.setAttribute("aria-label", "Next");
+ 
+  const dotsRow = document.createElement("div");
+  dotsRow.className = "carousel-dots";
+  const dots = data.map((_, i) => {
+    const d = document.createElement("button");
+    d.className = "carousel-dot" + (i === 0 ? " active" : "");
+    d.setAttribute("aria-label", `Go to card ${i + 1}`);
+    d.addEventListener("click", () => goTo(i));
+    dotsRow.appendChild(d);
+    return d;
+  });
+ 
+  const carouselWrap = document.createElement("div");
+  carouselWrap.className = "carousel-wrap";
+  carouselWrap.style.padding = "0 24px";
+  carouselWrap.appendChild(prevBtn);
+  carouselWrap.appendChild(trackOuter);
+  carouselWrap.appendChild(nextBtn);
+ 
+  wrapper.appendChild(carouselWrap);
+  wrapper.appendChild(dotsRow);
+  container.appendChild(wrapper);
+ 
+  function visibleCount() {
+    const w = trackOuter.clientWidth || 600;
+    return Math.max(1, Math.floor((w + GAP) / (CARD_W + GAP)));
+  }
+ 
+  function goTo(idx) {
+    const maxIdx = Math.max(0, data.length - visibleCount());
+    currentIndex = Math.max(0, Math.min(idx, maxIdx));
+    track.style.transform = `translateX(-${currentIndex * (CARD_W + GAP)}px)`;
+    dots.forEach((d, i) => d.classList.toggle("active", i === currentIndex));
+    prevBtn.disabled = currentIndex === 0;
+    nextBtn.disabled = currentIndex >= maxIdx;
+  }
+ 
+  prevBtn.addEventListener("click", () => goTo(currentIndex - 1));
+  nextBtn.addEventListener("click", () => goTo(currentIndex + 1));
+ 
+  let touchStartX = 0;
+  trackOuter.addEventListener("touchstart", e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  trackOuter.addEventListener("touchend", e => {
+    const dx = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 40) goTo(currentIndex + (dx > 0 ? 1 : -1));
+  });
+ 
+  requestAnimationFrame(() => goTo(0));
+}
+ 
+// ───────────────────────────────────────────────
+// HINT CHIPS & HERO INPUT
+// ───────────────────────────────────────────────
+function fillAndSend(text) { performSearch(text); }
+ 
+const heroInput = document.getElementById("user_input");
+const heroSendBtn = document.getElementById("send_btn");
+ 
+heroSendBtn.addEventListener("click", () => {
+  const q = heroInput.value.trim();
+  if (q) { heroInput.value = ""; performSearch(q); }
+});
+heroInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); heroSendBtn.click(); }
+});
+heroInput.addEventListener("input", () => {
+  heroInput.style.height = "auto";
+  heroInput.style.height = heroInput.scrollHeight + "px";
 });
 </script>
-
 </body>
 </html>
+ 

@@ -152,7 +152,7 @@ def detect_media_type(user_input):
 
     return None
 
-def get_recommendations(model, user_input):
+def get_recommendations(model, user_input, favs, dis):
 
     requested_type = detect_media_type(user_input)
 
@@ -220,6 +220,20 @@ def get_recommendations(model, user_input):
         "4. [Music] Kid A - Radiohead\n"
         "5. [Movie] Arrival"
     )
+
+    if favs:
+        system_prompt += (
+            "\n\nUSER FAVORITES:\n" +
+            "\n".join(favs) +
+            "\n\nRecommend things similar to these favorites but not identical."
+        )
+
+    if dis:
+        system_prompt += (
+            "\n\nUSER DISLIKES:\n" +
+            "\n".join(dis) +
+            "\n\nAvoid recommending anything similar to these dislikes."
+        )
 
     messages = [
         {
@@ -523,6 +537,8 @@ def recommend():
         data = request.get_json()
 
         user_input = data.get("query", "")
+        favs = [row["title"] for row in data.get("favs")]
+        dis = [row["title"] for row in data.get("dis")]
 
         print("\n========== USER INPUT ==========")
         print(user_input)
@@ -530,7 +546,9 @@ def recommend():
 
         items = get_recommendations(
             llama3,
-            user_input
+            user_input,
+            favs,
+            dis
         )
 
         results = []
